@@ -280,11 +280,11 @@ const Settle=(()=>{const B=THREE,CELL=110,RAW=new Map(),FIN=new Map(),PR={reino:
   build(cx,cz,x0,z0,big,col,props){const P=[],G=[],ck=cx+','+cz,inC=(x,z)=>x>=x0&&x<x0+CS&&z>=z0&&z<z0+CS;this.loot=this.loot.filter(L=>L.ck!==ck);
    for(let i=Math.floor((x0-80)/CELL);i<=Math.floor((x0+CS+80)/CELL);i++)for(let j=Math.floor((z0-80)/CELL);j<=Math.floor((z0+CS+80)/CELL);j++){const s=get(i,j);if(!s)continue;const ab=s.ab,R=rng(s.id*31+7);
     const pt=(A,g,c,x,y,z)=>{g.translate(x+s.x,y+s.y,z+s.z);A.push([g,A===G?c:tn(c,ab)]);};
-    if(inC(s.x,s.z)){pt(P,new B.CylinderGeometry(2.2+s.t*3,2.4+s.t*3,.25,12),0x9a9a92,0,.05,0);const plaza=s.t===2?7.5:s.t===1?4.2:1.8;pt(P,new B.CylinderGeometry(plaza,plaza+.35,.16,12),0x7f8d91,0,.18,0);const ring=new B.TorusGeometry(plaza*.82,.12,5,12);ring.rotateX(Math.PI/2);pt(P,ring,0xb8c8c4,0,.31,0);for(let k=0;k<4;k++){const an=k*Math.PI/2;pt(P,new B.CylinderGeometry(.07,.12,1.65,5),0x76583f,Math.cos(an)*(plaza+.8),1.04,Math.sin(an)*(plaza+.8));pt(G,new B.OctahedronGeometry(.25,0),0xffe6a0,Math.cos(an)*(plaza+.8),2.1,Math.sin(an)*(plaza+.8));}pt(G,new B.IcosahedronGeometry(s.t===2?.72:s.t===1?.5:.32,1),0x9ff3ff,0,.85,0);col.push({x:s.x,z:s.z,r:plaza+.8,cr:plaza+1,ty:s.y+2.2,kind:'settlement'});props.push({x:s.x,z:s.z,n:TN[s.t]+' '+CN[s.c]+(ab?' abandonada':'' )});
-     if(s.t<2){pt(P,new B.CylinderGeometry(.15,.2,2.6,6),0x5a4a3a,0,1.3,0);if(s.t)pt(P,new B.CylinderGeometry(1.6,1.8,.8,10),0xb8c8d0,0,.5,0);if(!ab)pt(G,new B.IcosahedronGeometry(.35+s.t*.3,0),0xffe9a0,0,2.8+s.t*.5,0);col.push({x:s.x,z:s.z,r:1+s.t*1.8,cr:2,ty:s.y+3});}
-     else{pt(P,new B.BoxGeometry(14,15,14),0xc9c0b0,0,7.5,0);pt(P,new B.ConeGeometry(10,7,4).rotateY(.785),RC[s.c],0,18.5,0);for(const q of [[1,1],[1,-1],[-1,1],[-1,-1]]){pt(P,new B.CylinderGeometry(2.4,2.8,21,8),0xd8cfc0,q[0]*8,10.5,q[1]*8);pt(P,new B.ConeGeometry(3.4,5,8),RC[s.c],q[0]*8,23.5,q[1]*8);if(!ab)pt(G,new B.BoxGeometry(.8,1.6,.3),0xffd27a,q[0]*8,14,q[1]*8+q[1]*2.7);col.push({x:s.x+q[0]*8,z:s.z+q[1]*8,r:3,cr:3.5,ty:s.y+22});}
-      if(!ab)for(const dx of [-3,0,3])pt(G,new B.BoxGeometry(1,2,.2),0xffd27a,dx,8,7.1);col.push({x:s.x,z:s.z,r:9,cr:10,ty:s.y+15});}}
-    lay(s).forEach((h,k)=>{if(!inC(h.x,h.z))return;const r=h.foot||foot(s.c,h.s),overlap=col.some(o=>Math.hypot(o.x-h.x,o.z-h.z)<r+(o.r||.35)+.7);if(overlap)return;house(h,s,P,G);const base=s.c===3?Math.max(h.y,WATER+.3):h.y-.08,top=base+(s.c===0?4.7:s.c===1?6.6:s.c===2?3.3:Math.max(2*h.s,base-h.y+1.35*h.s)+3.15*h.s);col.push({x:h.x,z:h.z,r,cr:r+.35,ty:top,kind:'settlement'});
+    if(inC(s.x,s.z)){pt(P,new B.CylinderGeometry(2.2+s.t*3,2.4+s.t*3,.25,12),0x9a9a92,0,.05,0);const plaza=s.t===2?7.5:s.t===1?4.2:1.8;pt(P,new B.CylinderGeometry(plaza,plaza+.35,.16,12),0x7f8d91,0,.18,0);const ring=new B.TorusGeometry(plaza*.82,.12,5,12);ring.rotateX(Math.PI/2);pt(P,ring,0xb8c8c4,0,.31,0);for(let k=0;k<4;k++){const an=k*Math.PI/2,lx=Math.cos(an)*(plaza+.8),lz=Math.sin(an)*(plaza+.8);pt(P,new B.CylinderGeometry(.07,.12,1.65,5),0x76583f,lx,1.04,lz);pt(G,new B.OctahedronGeometry(.25,0),0xffe6a0,lx,2.1,lz);col.push({x:s.x+lx,z:s.z+lz,r:.2,cr:.26,baseY:s.y,ty:s.y+1.9,kind:'settlement-post'});}pt(G,new B.IcosahedronGeometry(s.t===2?.72:s.t===1?.5:.32,1),0x9ff3ff,0,.85,0);props.push({x:s.x,z:s.z,n:TN[s.t]+' '+CN[s.c]+(ab?' abandonada':'' )});
+     if(s.t<2){pt(P,new B.CylinderGeometry(.15,.2,2.6,6),0x5a4a3a,0,1.3,0);if(s.t)pt(P,new B.CylinderGeometry(1.6,1.8,.8,10),0xb8c8d0,0,.5,0);if(!ab)pt(G,new B.IcosahedronGeometry(.35+s.t*.3,0),0xffe9a0,0,2.8+s.t*.5,0);col.push({x:s.x,z:s.z,r:1+s.t*1.8,cr:2,baseY:s.y-.1,ty:s.y+3});}
+     else{pt(P,new B.BoxGeometry(14,15,14),0xc9c0b0,0,7.5,0);pt(P,new B.ConeGeometry(10,7,4).rotateY(.785),RC[s.c],0,18.5,0);for(const q of [[1,1],[1,-1],[-1,1],[-1,-1]]){pt(P,new B.CylinderGeometry(2.4,2.8,21,8),0xd8cfc0,q[0]*8,10.5,q[1]*8);pt(P,new B.ConeGeometry(3.4,5,8),RC[s.c],q[0]*8,23.5,q[1]*8);if(!ab)pt(G,new B.BoxGeometry(.8,1.6,.3),0xffd27a,q[0]*8,14,q[1]*8+q[1]*2.7);col.push({x:s.x+q[0]*8,z:s.z+q[1]*8,r:3,cr:3.5,baseY:s.y-.1,ty:s.y+22});}
+      if(!ab)for(const dx of [-3,0,3])pt(G,new B.BoxGeometry(1,2,.2),0xffd27a,dx,8,7.1);col.push({x:s.x,z:s.z,r:9,cr:10,baseY:s.y-.1,ty:s.y+15});}}
+    lay(s).forEach((h,k)=>{if(!inC(h.x,h.z))return;const r=h.foot||foot(s.c,h.s),overlap=col.some(o=>Math.hypot(o.x-h.x,o.z-h.z)<r+(o.r||.35)+.7);if(overlap)return;const base=s.c===3?Math.max(h.y,WATER+.3):h.y-.08,top=base+(s.c===0?5.05*h.s:s.c===1?7.45*h.s:s.c===2?4.3*h.s:Math.max(2*h.s,base-h.y+1.35*h.s)+3.15*h.s);house(h,s,P,G);col.push({x:h.x,z:h.z,r,cr:r+.35,baseY:base,ty:top,kind:'settlement'});
      if(ab&&k%3===0){const id=LT[s.c][k%2],key=s.id+':'+k,mt=LM_[id]||(LM_[id]=new B.MeshBasicMaterial({color:LC[id]})),m=new B.Mesh(LG,mt),x=h.x+2.8*h.s,y=hAt(x,h.z)+.7;m.position.set(x,y,h.z);big.add(m);const L={ck,key,x,z:h.z,m,id,t:this.taken.has(key)?1:0};if(L.t)m.visible=false;this.loot.push(L);}});
     if(s.t>=1&&s.c!==3)for(let k=0,n=s.t===1?6:12;k<n;k++){const a=k*6.283/n+.3,d=s.t===1?9:18,x=s.x+Math.cos(a)*d,z=s.z+Math.sin(a)*d,y=hAt(x,z);if(!inC(x,z)||y<WATER+.5||col.some(o=>Math.hypot(o.x-x,o.z-z)<(o.r||.35)+2.1))continue;
      const g=(q,c,lx,ly,lz)=>{q.translate(lx,ly,lz).rotateY(-a).translate(x,y,z);P.push([q,tn(c,ab)]);};g(new B.BoxGeometry(2,.9,1.2),0x8a6a45,0,.45,0);g(new B.BoxGeometry(2.6,.12,1.7),[0xe8503f,0x4fa8e0,0xf2c14e,0x7fd6a0][k%4],0,1.7,0);g(new B.CylinderGeometry(.07,.07,1.7,4),0x6b4a2f,1.1,.85,.6);g(new B.CylinderGeometry(.07,.07,1.7,4),0x6b4a2f,-1.1,.85,.6);}
@@ -434,9 +434,17 @@ const World={
       else if(t==='blossom'||t==='crystal'){const q=.85+r()*.3;c.setRGB(q,q,q);}
       else c.setRGB(1,1,1);
       L[t].push({x,y,z,s,a:.85+r()*.35,lx:(r()-.5)*(BS[t]?.08:.3),lz:(r()-.5)*(BS[t]?.08:.3),r:r()*6.28,c:[c.r,c.g,c.b]});
-      if(t==='tree')col.push({x,z,r:.82*s,cr:1.2*s+.2,ty:y+5.6*s,kind:'tree'});else if(t==='treeF')col.push({x,z,r:.72*s,cr:1.4*s,ty:y+6.2*s,kind:'tree'});else if(t==='treeC')col.push({x,z,r:.62*s,cr:1.1*s,ty:y+5*s,kind:'tree'});
-      else if(t==='mush')col.push({x,z,r:.8*s,cr:2.4*s,ty:y+4.4*s});else if(t==='redwood')col.push({x,z,r:1.2*s,cr:1.4*s,ty:y+10*s,kind:'tree'});else if(t==='willow')col.push({x,z,r:.9*s,cr:2*s,ty:y+4.8*s,kind:'tree'});else if(t==='blossom')col.push({x,z,r:.82*s,cr:2*s,ty:y+5*s,kind:'tree'});else if(t==='crystal')col.push({x,z,r:.72*s,cr:1.6*s,ty:y+6*s,kind:'crystal'});else if(t==='mush2')col.push({x,z,r:.5*s,cr:1.9*s,ty:y+6.5*s});else if(t==='mush3')col.push({x,z,r:.9*s,cr:3.4*s,ty:y+3*s});
-      else if(t==='rock'&&s>1.2)col.push({x,z,r:.9*s,cr:s+.2,ty:y+1.1*s,kind:'rock',climbable:true});
+      if(t==='tree')col.push({x,z,r:.9*s,cr:1.2*s+.2,baseY:y-.12*s,ty:y+4.4*s,kind:'tree'});
+      else if(t==='treeF')col.push({x,z,r:.78*s,cr:1.4*s,baseY:y-.12*s,ty:y+3.55*s,kind:'tree'});
+      else if(t==='treeC')col.push({x,z,r:.68*s,cr:1.1*s,baseY:y-.12*s,ty:y+1.5*s,kind:'tree'});
+      else if(t==='mush')col.push({x,z,r:.8*s,cr:2.4*s,baseY:y-.12*s,ty:y+4.5*s});
+      else if(t==='redwood')col.push({x,z,r:1.2*s,cr:1.4*s,baseY:y-.12*s,ty:y+9.9*s,kind:'tree'});
+      else if(t==='willow')col.push({x,z,r:.92*s,cr:2*s,baseY:y-.12*s,ty:y+3.7*s,kind:'tree'});
+      else if(t==='blossom')col.push({x,z,r:.84*s,cr:2*s,baseY:y-.12*s,ty:y+3.5*s,kind:'tree'});
+      else if(t==='crystal')col.push({x,z,r:.72*s,cr:1.6*s,baseY:y-.12*s,ty:y+6*s,kind:'crystal'});
+      else if(t==='mush2')col.push({x,z,r:.5*s,cr:1.9*s,baseY:y-.12*s,ty:y+7.5*s});
+      else if(t==='mush3')col.push({x,z,r:.9*s,cr:3.4*s,baseY:y-.12*s,ty:y+2.8*s});
+      else if(t==='rock'&&s>1.2)col.push({x,z,r:1.0*s,cr:1.1*s,baseY:y-.1-.5*s,ty:y-.1+1.45*s,kind:'rock',climbable:true});
     }
     const props=[],gs=[],GC={crystal:[.5,.9,1],mush2:[.85,.65,1],mush3:[.5,1,.82]};
     for(let n=0;n<8;n++){
@@ -447,7 +455,7 @@ const World={
       const kd=ks[(r()*ks.length)|0],D=this.PD[kd],s=2.2+r()*.9,pm=new B.Mesh(this.T[kd],this.LM);
       pm.position.set(x,y-.1,z);pm.rotation.y=r()*6.28;pm.scale.setScalar(s);(D[1]?big:det).add(pm);
       D[4].forEach(q=>{const b=new B.Mesh(this.BLg,this.BL[q[3]]);b.position.set(q[0],q[1],q[2]);pm.add(b);});if(D[4].length)gs.push({x,y:y+D[4][0][1]*s,z,c:[[1,.25,.2],[.35,1,.55],[.5,.95,1]][D[4][0][3]],i:1.3});
-      if(D[2])col.push({x,z,r:D[2]*s*.6,cr:D[2]*s,ty:y+D[3]*s});
+      if(D[2])col.push({x,z,r:D[2]*s*.6,cr:D[2]*s,baseY:y-.1,ty:y+D[3]*s});
       for(let k=0;k<5;k++){const a=r()*6.28,d=(2+r()*3)*s,vx=x+Math.cos(a)*d,vz=z+Math.sin(a)*d,vy=hAt(vx,vz);if(vy<WATER+.3)continue;L[k%2?'fern':'bush'].push({x:vx,y:vy,z:vz,s:1.3+r(),a:1,lx:0,lz:0,r:r()*6,c:[.9,1,.9]});}
       props.push({x,z,n:D[0]});
     }
@@ -467,14 +475,14 @@ const World={
       const y=hAt(q.x,q.z);
       if(q.t==='ring'){
         for(let i=0;i<8;i++){const an=i*Math.PI/4,sx=q.x+Math.cos(an)*5,sz=q.z+Math.sin(an)*5,m=new B.Mesh(this.G.stone,this.LM);
-          m.position.set(sx,hAt(sx,sz)-.3,sz);m.rotation.y=-an;big.add(m);col.push({x:sx,z:sz,r:.6,cr:.8,ty:hAt(sx,sz)+3});}
+          m.position.set(sx,hAt(sx,sz)-.3,sz);m.rotation.y=-an;big.add(m);col.push({x:sx,z:sz,r:.6,cr:.8,baseY:hAt(sx,sz)-.3,ty:hAt(sx,sz)+3});}
         const orb=new B.Mesh(new B.IcosahedronGeometry(.5,1),new B.MeshBasicMaterial({color:0x9ff3ff})),halo=new B.Mesh(new B.IcosahedronGeometry(.95,1),new B.MeshBasicMaterial({color:0x9ff3ff,transparent:true,opacity:.25,depthWrite:false}));
         orb.position.set(q.x,y+1.6,q.z);halo.position.copy(orb.position);big.add(orb,halo);
       }else{
         const top=y+9.5,wall=new B.Mesh(new B.BoxGeometry(18,12,5),this.WALL);wall.position.set(q.x,y+3.5,q.z);big.add(wall);
         const fl=new B.Mesh(new B.PlaneGeometry(5,top-WATER),new B.MeshBasicMaterial({color:0xbfefff,transparent:true,opacity:.65,side:B.DoubleSide,depthWrite:false}));
         fl.position.set(q.x,(top+WATER)/2,q.z+2.6);big.add(fl);
-        for(const dx of [-6,0,6])col.push({x:q.x+dx,z:q.z,r:3.5,cr:4,ty:top});
+        for(const dx of [-6,0,6])col.push({x:q.x+dx,z:q.z,r:3.5,cr:4,baseY:y-.2,ty:top});
       }
     }
     Settle.build(cx,cz,x0,z0,big,col,props);
@@ -598,24 +606,58 @@ const Player={
     const platform=this.platformAt(x,z);
     return this.isWaterAt(x,z,this.swimming,platform)?WATER-.82:platform;
   },
+  colliderOverlapsVertically(t,feet=this.pos.y){
+    const base=Number.isFinite(t.baseY)?t.baseY:hAt(t.x,t.z)-.2;
+    const top=Number.isFinite(t.ty)?t.ty:base+2;
+    return feet+this.height>base+.05&&feet+.08<top-.04;
+  },
   blockedAt(x,z){
-    for(const t of World.trees){const top=t.ty;if(Number.isFinite(top)&&this.pos.y>top+.12)continue;if(t.climbable&&Number.isFinite(top)&&this.pos.y>=top-.16)continue;const r=(t.r||.35)+this.radius,dx=x-t.x,dz=z-t.z;if(dx*dx+dz*dz<r*r)return true;}
+    for(const t of World.trees){
+      if(!this.colliderOverlapsVertically(t))continue;
+      const r=(t.r||.35)+this.radius,dx=x-t.x,dz=z-t.z;
+      if(dx*dx+dz*dz<r*r)return true;
+    }
     return false;
   },
   separateObstacles(){
-    for(const t of World.trees){const top=t.ty;if(Number.isFinite(top)&&this.pos.y>top+.12)continue;if(t.climbable&&Number.isFinite(top)&&this.pos.y>=top-.16)continue;const r=(t.r||.35)+this.radius,dx=this.pos.x-t.x,dz=this.pos.z-t.z,d2=dx*dx+dz*dz;if(d2<r*r){const d=Math.sqrt(d2),a=d<.001?this.group.rotation.y:Math.atan2(dx,dz),nx=d<.001?Math.sin(a):dx/d,nz=d<.001?Math.cos(a):dz/d,push=r-d+.02;this.pos.x+=nx*push;this.pos.z+=nz*push;}}
+    for(const t of World.trees){
+      if(!this.colliderOverlapsVertically(t))continue;
+      const r=(t.r||.35)+this.radius,dx=this.pos.x-t.x,dz=this.pos.z-t.z,d2=dx*dx+dz*dz;
+      if(d2<r*r){
+        const d=Math.sqrt(d2),a=d<.001?this.group.rotation.y:Math.atan2(dx,dz);
+        const nx=d<.001?Math.sin(a):dx/d,nz=d<.001?Math.cos(a):dz/d,push=r-d+.025;
+        this.pos.x+=nx*push;this.pos.z+=nz*push;
+      }
+    }
   },
   moveWithCollisions(dx,dz){
     if(!World.trees.length){this.pos.x+=dx;this.pos.z+=dz;return;}
-    this.separateObstacles();const steps=Math.min(16,Math.max(1,Math.ceil(Math.hypot(dx,dz)/.18))),sx=dx/steps,sz=dz/steps;
-    for(let i=0;i<steps;i++){const nx=this.pos.x+sx;if(!this.blockedAt(nx,this.pos.z))this.pos.x=nx;else this.vel.x*=.15;const nz=this.pos.z+sz;if(!this.blockedAt(this.pos.x,nz))this.pos.z=nz;else this.vel.z*=.15;}
+    this.separateObstacles();
+    const steps=Math.min(32,Math.max(1,Math.ceil(Math.hypot(dx,dz)/.12))),sx=dx/steps,sz=dz/steps;
+    for(let i=0;i<steps;i++){
+      const nx=this.pos.x+sx;
+      if(!this.blockedAt(nx,this.pos.z))this.pos.x=nx;else this.vel.x*=.12;
+      const nz=this.pos.z+sz;
+      if(!this.blockedAt(this.pos.x,nz))this.pos.z=nz;else this.vel.z*=.12;
+    }
   },
   tryClimb(fx,fz){
     let best=null,bestY=0,bestScore=1e9;const maxHeight=this.height*1.5;
-    for(const t of World.trees){if(!t.climbable||!Number.isFinite(t.ty))continue;const dx=t.x-this.pos.x,dz=t.z-this.pos.z,along=dx*fx+dz*fz,lateral=Math.abs(dx*fz-dz*fx),r=t.r||.5;
-      if(along<-.25||along>r+this.radius+.9||lateral>r*.88+.35)continue;const tx=t.x+fx*r*.18,tz=t.z+fz*r*.18,ty=Math.max(t.ty,hAt(tx,tz)),rise=ty-this.pos.y;if(rise<.18||rise>maxHeight)continue;
-      const score=Math.hypot(dx,dz)-Math.min(r,1.5)*.35;if(score<bestScore){best=t;bestY=ty;bestScore=score;}}
-    if(!best)return false;const d=(best.r||.5)*.18;this.climb={sx:this.pos.x,sz:this.pos.z,sy:this.pos.y,tx:best.x+fx*d,tz:best.z+fz*d,ty:bestY,t:0,dur:.56};this.vy=0;this.grounded=false;this.state='climb';return true;
+    for(const t of World.trees){
+      if(!t.climbable||!Number.isFinite(t.ty))continue;
+      const dx=t.x-this.pos.x,dz=t.z-this.pos.z,along=dx*fx+dz*fz,lateral=Math.abs(dx*fz-dz*fx),r=t.r||.5;
+      const base=Number.isFinite(t.baseY)?t.baseY:hAt(t.x,t.z)-.2;
+      if(this.pos.y+this.height<base+.1)continue;
+      if(along<-.25||along>r+this.radius+1.05||lateral>r*.92+.4)continue;
+      const tx=t.x+fx*r*.18,tz=t.z+fz*r*.18,ty=Math.max(t.ty,hAt(tx,tz)),rise=ty-this.pos.y;
+      if(rise<.18||rise>maxHeight)continue;
+      const score=Math.hypot(dx,dz)-Math.min(r,1.5)*.35;
+      if(score<bestScore){best=t;bestY=ty;bestScore=score;}
+    }
+    if(!best)return false;
+    const d=(best.r||.5)*.18;
+    this.climb={sx:this.pos.x,sz:this.pos.z,sy:this.pos.y,tx:best.x+fx*d,tz:best.z+fz*d,ty:bestY,t:0,dur:.62};
+    this.vy=0;this.grounded=false;this.state='climb';return true;
   },
   update(dt){
     dt=Math.max(dt,.001);
