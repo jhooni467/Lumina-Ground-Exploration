@@ -364,9 +364,15 @@ const World={
     this.PD={plane:['Avión derribado',1,3.2,4,[[-4.2,4.5,0,0],[4.5,1.7,.2,2]]],screen:['Pantalla rota',0,0,0,[[0,.9,.1,2]]],pc:['Computadora abandonada',0,0,0,[[.5,.45,.45,2]]],tower:['Torre de comunicación',1,1.2,15,[[0,15.4,0,0]]],machine:['Máquina cubierta de musgo',1,2.4,3.5,[[1.2,3.3,.8,1]]],frame:['Estructura oxidada',1,1,5,[]],device:['Dispositivo abandonado',0,0,0,[[0,.2,0,2]]],bunker:['Instalación oculta',1,3,3,[[0,2.3,2.1,1]]],cave:['Cueva con luz',1,3.5,5,[[0,.6,-.4,2]]]};
     this.BL=[0xff3b30,0x59ff8a,0x7ff0ff].map(c=>new B.MeshBasicMaterial({color:c}));this.BLg=new B.IcosahedronGeometry(.14,0);
     this.waterTime={value:0};
-    const waterMat=new B.MeshPhongMaterial({color:0x3aa6c8,transparent:true,opacity:.74,depthWrite:false,shininess:52,specular:0x9edff0});
-    waterMat.onBeforeCompile=sh=>{sh.uniforms.uLuminaTime=this.waterTime;sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uLuminaTime;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.y+=sin(position.x*.11+uLuminaTime*1.15)*.055+cos(position.z*.09-uLuminaTime*.9)*.045;');};
-    this.water=new B.Mesh(new B.PlaneGeometry(300,300,40,40).rotateX(-Math.PI/2),waterMat);
+    const waterMat=new B.MeshPhongMaterial({color:0x42b3d1,transparent:true,opacity:.78,depthWrite:false,shininess:82,specular:0xc7f5ff});
+    waterMat.onBeforeCompile=sh=>{
+      sh.uniforms.uLuminaTime=this.waterTime;
+      sh.vertexShader=sh.vertexShader
+        .replace('#include <common>','#include <common>\nuniform float uLuminaTime;')
+        .replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nfloat waveDx=cos(position.x*.11+uLuminaTime*1.15)*.0143+cos((position.x+position.z)*.065+uLuminaTime*.72)*.003575;\nfloat waveDz=-sin(position.z*.09-uLuminaTime*.9)*.0099+cos((position.x+position.z)*.065+uLuminaTime*.72)*.003575;\nobjectNormal=normalize(objectNormal+vec3(-waveDx,0.0,-waveDz));')
+        .replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.y+=sin(position.x*.11+uLuminaTime*1.15)*.13+cos(position.z*.09-uLuminaTime*.9)*.11+sin((position.x+position.z)*.065+uLuminaTime*.72)*.055;');
+    };
+    this.water=new B.Mesh(new B.PlaneGeometry(300,300,80,80).rotateX(-Math.PI/2),waterMat);
     scene.add(this.water);
     const tex=(()=>{const c=document.createElement('canvas');c.width=c.height=32;const x=c.getContext('2d'),g=x.createRadialGradient(16,16,0,16,16,16);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.3,'rgba(255,255,255,.5)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,32,32);return new B.CanvasTexture(c);})();
     const NF=190;this.fa=[];for(let i=0;i<NF;i++)this.fa.push({x:Math.random()*80,z:Math.random()*80,y:.5+Math.random()*4,p:Math.random()*6});
@@ -525,7 +531,7 @@ const World={
 /* ---------- Player: lobo de tres colas ---------- */
 const Player={
   group:new THREE.Group(),pos:new THREE.Vector3(0,hAt(0,0),0),vel:new THREE.Vector3(),
-  vy:0,grounded:true,phase:0,clock:0,actT:0,landT:0,state:'idle',angVel:0,P:{},radius:.43,height:2.15,swimming:false,wasSwimming:false,swimKick:0,climb:null,splashT:0,idleTimer:0,idleWait:11,idleAnim:'',idleElapsed:0,idleDuration:3,stepTimer:.25,wasLanding:false,
+  vy:0,grounded:true,phase:0,clock:0,actT:0,landT:0,state:'idle',angVel:0,P:{},radius:.43,height:2.15,swimming:false,wasSwimming:false,swimKick:0,climb:null,splashT:0,splashEntering:false,splashRings:[],idleTimer:0,idleWait:11,idleAnim:'',idleElapsed:0,idleDuration:3,stepTimer:.25,wasLanding:false,
   init(){
     const flat=g=>{g=g.toNonIndexed();g.computeVertexNormals();return g;};
     const mat=(c,o)=>new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}));
@@ -564,15 +570,34 @@ const Player={
     this.light=new THREE.PointLight(0xffd9a0,0,12,2);scene.add(this.light);
     this.shadow=new THREE.Mesh(new THREE.CircleGeometry(.8,10),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.3}));
     this.shadow.rotation.x=-Math.PI/2;this.group.traverse(o=>{if(o.isMesh)o.castShadow=true;});scene.add(this.shadow,this.group);
-     this.splash=new THREE.Mesh(new THREE.RingGeometry(.2,.38,12),new THREE.MeshBasicMaterial({color:0xbfefff,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));this.splash.rotation.x=-Math.PI/2;this.splash.visible=false;scene.add(this.splash);
+     this.splash=new THREE.Group();this.splashRings=[];
+     for(let i=0;i<3;i++){
+       const ring=new THREE.Mesh(new THREE.RingGeometry(.22,.36,12),new THREE.MeshBasicMaterial({color:i===0?0xd7f8ff:0x8ce8ff,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));
+       ring.rotation.x=-Math.PI/2;ring.visible=false;this.splash.add(ring);this.splashRings.push(ring);
+     }
+     this.splash.visible=false;scene.add(this.splash);
   },
   platformAt(x,z){
     let top=hAt(x,z);
     for(const t of World.trees){if(!t.climbable||!Number.isFinite(t.ty))continue;const r=Math.max(.25,(t.r||.5)*.76),dx=x-t.x,dz=z-t.z;if(dx*dx+dz*dz<r*r)top=Math.max(top,t.ty);}
     return top;
   },
-  groundAt(x,z){const h=this.platformAt(x,z);return h<WATER-.35?WATER-.55:h;},
-  isWaterAt(x,z){return hAt(x,z)<WATER-.35&&this.platformAt(x,z)<=WATER-.35;},
+  waterDepthAt(x,z){
+    if(this.platformAt(x,z)>WATER+.08)return 0;
+    return Math.max(0,WATER-hAt(x,z));
+  },
+  isWaterAt(x,z,wasSwimming=this.swimming,platform=this.platformAt(x,z)){
+    if(platform>WATER+.08)return false;
+    const threshold=WATER+(wasSwimming?.16:-.12),r=this.radius*.72;
+    const samples=[[0,0],[r,0],[-r,0],[0,r],[0,-r]];
+    let submerged=0;
+    for(const p of samples)if(hAt(x+p[0],z+p[1])<threshold)submerged++;
+    return submerged>=(wasSwimming?2:3);
+  },
+  groundAt(x,z){
+    const platform=this.platformAt(x,z);
+    return this.isWaterAt(x,z,this.swimming,platform)?WATER-.82:platform;
+  },
   blockedAt(x,z){
     for(const t of World.trees){const top=t.ty;if(Number.isFinite(top)&&this.pos.y>top+.12)continue;if(t.climbable&&Number.isFinite(top)&&this.pos.y>=top-.16)continue;const r=(t.r||.35)+this.radius,dx=x-t.x,dz=z-t.z;if(dx*dx+dz*dz<r*r)return true;}
     return false;
@@ -598,7 +623,7 @@ const Player={
     const kx=((k.KeyD||k.ArrowRight)?1:0)-((k.KeyA||k.ArrowLeft)?1:0),ky=((k.KeyS||k.ArrowDown)?1:0)-((k.KeyW||k.ArrowUp)?1:0);
     let mx=Input.move.x+kx,my=Input.move.y+ky;
     const mag=(kx||ky)?(k.ShiftLeft?1:.6):Math.min(1,Math.hypot(Input.move.x,Input.move.y));
-    const sc=(mag<.7?WALK*(mag/.7):WALK+(mag-.7)/.3*(RUN-WALK))*(this.swimming?.72:1);
+    const sc=(mag<.7?WALK*(mag/.7):WALK+(mag-.7)/.3*(RUN-WALK))*(this.swimming?.68:1);
     const s=Math.sin(Input.yaw),c=Math.cos(Input.yaw);
     let tx=0,tz=0;
     if(mag>.08){const l=Math.hypot(mx,my)||1;mx/=l;my/=l;tx=(mx*c+my*s)*sc;tz=(-mx*s+my*c)*sc;}
@@ -607,23 +632,45 @@ const Player={
     if(!this.climb)this.moveWithCollisions(this.vel.x*dt,this.vel.z*dt);
     /* salto, caída y acción */
     this.jc=Math.max(0,(this.jc||0)-dt);
-    this.swimming=!this.climb&&this.isWaterAt(this.pos.x,this.pos.z);
+    this.swimming=!this.climb&&this.isWaterAt(this.pos.x,this.pos.z,this.wasSwimming);
     if(Input.jump){Input.jump=false;
       if(this.climb){}
-      else if(this.swimming){this.swimKick=.42;this.vy=Math.max(this.vy,1.35);}
+      else if(this.swimming){this.swimKick=.5;this.vy=Math.max(this.vy,1.5);}
       else if(this.grounded){const sp=Math.hypot(this.vel.x,this.vel.z),fx=sp>.15?this.vel.x/sp:Math.sin(this.group.rotation.y),fz=sp>.15?this.vel.z/sp:Math.cos(this.group.rotation.y);if(!this.tryClimb(fx,fz)){this.vy=JUMP;this.grounded=false;this.jumps=1;this.dj=false;this.jc=.12;}}
       else if((this.jumps||0)<2&&this.jc<=0){this.vy=JUMP*Math.sqrt(1.5);this.jumps=2;this.dj=true;this.spin=.001;this.pop=1;this.pt=0;this.jc=.12;Interact.snd(320,.3,'triangle',.07,900);}}
     if(Input.act){Input.act=false;if(this.grounded&&!this.swimming&&this.actT<=0){this.actT=1.1;Interact.use();}}
     if(this.actT>0)this.actT-=dt;
     if(this.landT>0)this.landT-=dt;
     if(this.climb){const cl=this.climb;cl.t+=dt;const p=Math.min(1,cl.t/cl.dur),e=p*p*(3-2*p);this.pos.x=cl.sx+(cl.tx-cl.sx)*e;this.pos.z=cl.sz+(cl.tz-cl.sz)*e;this.pos.y=cl.sy+(cl.ty-cl.sy)*e+Math.sin(p*Math.PI)*.18;if(p>=1){this.pos.y=cl.ty;this.climb=null;this.grounded=true;this.vy=0;this.jumps=0;this.landT=.15;}}
-    const gy=this.groundAt(this.pos.x,this.pos.z);this.swimming=!this.climb&&this.isWaterAt(this.pos.x,this.pos.z);
+    const gy=this.groundAt(this.pos.x,this.pos.z);this.swimming=!this.climb&&this.isWaterAt(this.pos.x,this.pos.z,this.wasSwimming);
     if(this.climb)this.vy=0;
-    else if(this.swimming){this.grounded=false;this.swimKick=Math.max(0,this.swimKick-dt);const target=WATER-.55+(this.swimKick>0?.22:0);this.vy+=(target-this.pos.y)*9*dt;this.vy*=Math.exp(-4*dt);this.pos.y+=this.vy*dt;}
+    else if(this.swimming){
+      this.grounded=false;this.swimKick=Math.max(0,this.swimKick-dt);
+      const depth=this.waterDepthAt(this.pos.x,this.pos.z);
+      const bob=Math.sin(World.t*2.25+this.pos.x*.16+this.pos.z*.13)*.045;
+      const target=WATER-.82+Math.min(.14,Math.max(0,depth-1)*.025)+bob+(this.swimKick>0?.38:0);
+      this.vy+=(target-this.pos.y)*8.5*dt;this.vy*=Math.exp(-4.2*dt);this.pos.y+=this.vy*dt;
+    }
     else if(this.grounded)this.pos.y+=(gy-this.pos.y)*(1-Math.exp(-18*dt));
     else{this.vy-=GRAV*dt;this.pos.y+=this.vy*dt;if(this.pos.y<=gy){this.pos.y=gy;if(this.dj){this.dj=false;this.vy=3.4;this.jumps=2;this.spin=0;this.pop=-.9;this.pt=0;Interact.snd(180,.2,'sine',.09,90);}else{this.vy=0;this.grounded=true;this.landT=.18;this.jumps=0;}}}
-    if(this.swimming!==this.wasSwimming){this.wasSwimming=this.swimming;this.splashT=.55;this.splash.visible=true;this.splash.position.set(this.pos.x,WATER+.035,this.pos.z);}
-    if(this.splashT>0){this.splashT=Math.max(0,this.splashT-dt);const q=1-this.splashT/.55;this.splash.position.x=this.pos.x;this.splash.position.z=this.pos.z;this.splash.scale.setScalar(.75+q*2.1);this.splash.material.opacity=(1-q)*.55;this.splash.visible=true;}else this.splash.visible=false;
+    if(this.swimming!==this.wasSwimming){
+      this.splashEntering=this.swimming;this.wasSwimming=this.swimming;this.splashT=.78;
+      this.splash.visible=true;this.splash.position.set(this.pos.x,WATER+.075,this.pos.z);
+    }
+    if(this.splashT>0){
+      this.splashT=Math.max(0,this.splashT-dt);
+      const q=1-this.splashT/.78;
+      this.splash.position.x=this.pos.x;this.splash.position.z=this.pos.z;
+      this.splashRings.forEach((ring,i)=>{
+        const start=i*.16,p=Math.max(0,Math.min(1,(q-start)/.78));
+        ring.visible=q>=start&&p<1;
+        ring.scale.setScalar(.7+p*(this.splashEntering?3.6:2.7));
+        ring.material.opacity=ring.visible?(1-p)*(this.splashEntering?.72:.5):0;
+      });
+      this.splash.visible=true;
+    }else{
+      this.splash.visible=false;this.splashRings.forEach(r=>{r.visible=false;r.material.opacity=0;});
+    }
     /* orientación y velocidad angular */
     const sp=Math.hypot(this.vel.x,this.vel.z),prev=this.group.rotation.y;
     if(sp>.3)this.group.rotation.y=lerpAngle(prev,Math.atan2(this.vel.x,this.vel.z),1-Math.exp(-12*dt));
