@@ -370,7 +370,7 @@ const World={
       L[t].push({x,y,z,s,a:.85+r()*.35,lx:(r()-.5)*(BS[t]?.08:.3),lz:(r()-.5)*(BS[t]?.08:.3),r:r()*6.28,c:[c.r,c.g,c.b]});
       if(t==='tree')col.push({x,z,r:.82*s,cr:1.2*s+.2,ty:y+5.6*s,kind:'tree'});else if(t==='treeF')col.push({x,z,r:.72*s,cr:1.4*s,ty:y+6.2*s,kind:'tree'});else if(t==='treeC')col.push({x,z,r:.62*s,cr:1.1*s,ty:y+5*s,kind:'tree'});
       else if(t==='mush')col.push({x,z,r:.8*s,cr:2.4*s,ty:y+4.4*s});else if(t==='redwood')col.push({x,z,r:1.2*s,cr:1.4*s,ty:y+10*s,kind:'tree'});else if(t==='willow')col.push({x,z,r:.9*s,cr:2*s,ty:y+4.8*s,kind:'tree'});else if(t==='blossom')col.push({x,z,r:.82*s,cr:2*s,ty:y+5*s,kind:'tree'});else if(t==='crystal')col.push({x,z,r:.72*s,cr:1.6*s,ty:y+6*s,kind:'crystal'});else if(t==='mush2')col.push({x,z,r:.5*s,cr:1.9*s,ty:y+6.5*s});else if(t==='mush3')col.push({x,z,r:.9*s,cr:3.4*s,ty:y+3*s});
-      else if(t==='rock'&&s>1.2)col.push({x,z,r:.9*s,cr:s+.2,ty:y+.8*s,kind:'rock',climbable:true});
+      else if(t==='rock'&&s>1.2)col.push({x,z,r:.9*s,cr:s+.2,ty:y+1.1*s,kind:'rock',climbable:true});
     }
     const props=[],gs=[],GC={crystal:[.5,.9,1],mush2:[.85,.65,1],mush3:[.5,1,.82]};
     for(let n=0;n<8;n++){
@@ -465,7 +465,7 @@ const World={
 /* ---------- Player: lobo de tres colas ---------- */
 const Player={
   group:new THREE.Group(),pos:new THREE.Vector3(0,hAt(0,0),0),vel:new THREE.Vector3(),
-  vy:0,grounded:true,phase:0,clock:0,actT:0,landT:0,state:'idle',angVel:0,P:{},radius:.36,height:2.15,swimming:false,wasSwimming:false,swimKick:0,climb:null,splashT:0,
+  vy:0,grounded:true,phase:0,clock:0,actT:0,landT:0,state:'idle',angVel:0,P:{},radius:.43,height:2.15,swimming:false,wasSwimming:false,swimKick:0,climb:null,splashT:0,
   init(){
     const flat=g=>{g=g.toNonIndexed();g.computeVertexNormals();return g;};
     const mat=(c,o)=>new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}));
@@ -549,7 +549,8 @@ const Player={
     this.jc=Math.max(0,(this.jc||0)-dt);
     this.swimming=!this.climb&&this.isWaterAt(this.pos.x,this.pos.z);
     if(Input.jump){Input.jump=false;
-      if(this.swimming){this.swimKick=.42;this.vy=Math.max(this.vy,1.35);}
+      if(this.climb){}
+      else if(this.swimming){this.swimKick=.42;this.vy=Math.max(this.vy,1.35);}
       else if(this.grounded){const sp=Math.hypot(this.vel.x,this.vel.z),fx=sp>.15?this.vel.x/sp:Math.sin(this.group.rotation.y),fz=sp>.15?this.vel.z/sp:Math.cos(this.group.rotation.y);if(!this.tryClimb(fx,fz)){this.vy=JUMP;this.grounded=false;this.jumps=1;this.dj=false;this.jc=.12;}}
       else if((this.jumps||0)<2&&this.jc<=0){this.vy=JUMP*Math.sqrt(1.5);this.jumps=2;this.dj=true;this.spin=.001;this.pop=1;this.pt=0;this.jc=.12;Interact.snd(320,.3,'triangle',.07,900);}}
     if(Input.act){Input.act=false;if(this.grounded&&!this.swimming&&this.actT<=0){this.actT=1.1;Interact.use();}}
@@ -632,7 +633,8 @@ const CameraRig={
     }
     this.cur+=(want-this.cur)*(1-Math.exp(-(want<this.cur?20:3)*dt));
     camera.position.copy(this.focus).addScaledVector(d,this.cur);
-    camera.position.y=Math.max(camera.position.y,hAt(camera.position.x,camera.position.z)+.8);
+    const floorY=Player.isWaterAt(camera.position.x,camera.position.z)?WATER+.3:hAt(camera.position.x,camera.position.z)+.8;
+    camera.position.y=Math.max(camera.position.y,floorY);
     camera.lookAt(this.focus.x,this.focus.y+Math.max(0,-Input.pitch)*9,this.focus.z);
   }
 };
