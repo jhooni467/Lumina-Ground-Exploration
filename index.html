@@ -197,24 +197,83 @@ const Settle=(()=>{const B=THREE,CELL=110,RAW=new Map(),FIN=new Map(),PR={reino:
  const get=(i,j)=>{const k=i+','+j;if(FIN.has(k))return FIN.get(k);const s=raw(i,j);let f=s;
   if(s)for(let a=-1;a<=1&&f;a++)for(let b=-1;b<=1;b++){if(!a&&!b)continue;const o=raw(i+a,j+b);if(o&&Math.hypot(o.x-s.x,o.z-s.z)<(o.r+s.r)*1.1+16&&(o.r>s.r||(o.r===s.r&&o.id<s.id))){f=null;break;}}
   FIN.set(k,f);return f;};
- const lay=s=>{if(s.hs)return s.hs;const R=rng(s.id*977+13),n=s.t===2?85+(R()*25|0):s.t===1?26+(R()*30|0):4+(R()*12|0),hs=[];
-  for(let k=0;k<n*2&&hs.length<n;k++){const a=k*2.399+R()*.5,d=s.r*Math.sqrt((k+.5)/(n*1.6))*.95+(s.t?7:3),x=s.x+Math.cos(a)*d,z=s.z+Math.sin(a)*d,y=hAt(x,z),sz=(s.t===2?1.1:1)*(.8+R()*.6),v=R()*3|0,ra=R()*6.28;
-   if(s.c===3?y<WATER-1.8:y<WATER+.6)continue;if(hs.some(o=>Math.hypot(o.x-x,o.z-z)<(o.s+sz)*3.1))continue;
-   if(Math.abs(hAt(x+2,z)-hAt(x-2,z))+Math.abs(hAt(x,z+2)-hAt(x,z-2))>2.2)continue;hs.push({x,z,y,s:sz,a:ra,v});}
+ const foot=(c,z)=>({0:2.55,1:2.25,2:2.75,3:2.85}[c]||2.6)*z;
+ const lay=s=>{if(s.hs)return s.hs;const R=rng(s.id*977+13),target=s.t===2?78+(R()*22|0):s.t===1?26+(R()*22|0):5+(R()*10|0),hs=[];
+  const base=s.t===2?1.72:s.t===1?1.52:1.34;
+  for(let k=0;k<target*7&&hs.length<target;k++){
+   const a=k*2.399+R()*.5,ring=s.t===2?15:s.t===1?10:5,
+    d=s.r*Math.sqrt((k+.5)/(target*1.45))*.9+ring,
+    x=s.x+Math.cos(a)*d,z=s.z+Math.sin(a)*d,y=hAt(x,z),
+    sz=base+R()*.5,rad=foot(s.c,sz),v=R()*4|0,style=R()*4|0,ra=R()*6.28;
+   if(s.c===3?y<WATER-1.8:y<WATER+.6)continue;
+   const slope=Math.abs(hAt(x+rad*.55,z)-hAt(x-rad*.55,z))+Math.abs(hAt(x,z+rad*.55)-hAt(x,z-rad*.55));
+   if(slope>Math.min(2.3,rad*.48))continue;
+   if(hs.some(o=>Math.hypot(o.x-x,o.z-z)<o.foot+rad+1.15))continue;
+   hs.push({x,z,y,s:sz,a:ra,v,style,foot:rad});
+  }
   return s.hs=hs;};
- const house=(h,s,P,G)=>{const z=h.s,c=s.c,ab=s.ab,by=c===3?Math.max(h.y,WATER+.3):h.y-.1,
+ const house=(h,s,P,G)=>{const z=h.s,c=s.c,ab=s.ab,by=c===3?Math.max(h.y,WATER+.3):h.y-.08,
    add=(A,g,col,lx,ly,lz)=>{g.translate(lx,ly,lz).rotateY(h.a).translate(h.x,by,h.z);A.push([g,A===G?col:tn(col,ab)]);},
-   C=(a,b,hh,n)=>new B.CylinderGeometry(a,b,hh,n||8),S=(r,ph)=>new B.SphereGeometry(r,10,6,0,6.283,0,ph),X=(a,b,d)=>new B.BoxGeometry(a,b,d),WN=0xffd27a;
-  if(c===0){add(P,C(.85*z,z,1.7*z),0xf3e6cc,0,.85*z,0);const cap=S(1.7*z,1.45);cap.scale(1,.75,1);add(P,cap,[0xd9503f,0xe08a3a,0x9a6bd0][h.v],0,1.6*z,0);
-   for(let k=0;k<4;k++){const a=k*1.6+h.v,d=.7+(k%2)*.5;add(P,new B.IcosahedronGeometry(.22*z,0),0xffffff,Math.cos(a)*d*z,(1.6+.75*Math.sqrt(2.89-d*d))*z,Math.sin(a)*d*z);}
-   add(P,X(.5*z,.9*z,.12*z),0x7a4a2a,0,.45*z,.95*z);if(!ab)add(G,X(.3*z,.3*z,.12*z),WN,.5*z,1*z,.75*z);return 1.4*z;}
-  if(c===1){add(P,C(.7*z,.95*z,3.6*z,7),0x6b4a2f,0,1.8*z,0);add(P,C(2*z,2*z,.25*z),0x8a6a45,0,3.6*z,0);add(P,C(1.1*z,1.25*z,1.5*z,6),0xf6d5e6,0,4.45*z,0);
-   add(P,new B.ConeGeometry(1.8*z,1.5*z,6),[0xf28fb8,0xffe27a,0xb6e08a][h.v],0,5.95*z,0);add(P,X(.4*z,.7*z,.1*z),0x8a5a3a,0,4.1*z,1.15*z);if(!ab)add(G,X(.3*z,.3*z,.1*z),WN,.6*z,4.7*z,.95*z);return 1*z;}
-  if(c===2){const m=S(2.4*z,Math.PI/2);m.scale(1,.55,1);add(P,m,[0x5f9a4a,0x6aa84f,0x4f8a58][h.v],0,0,0);add(P,C(.75*z,.75*z,.25*z,10).rotateX(Math.PI/2),0x9a9a8f,0,.55*z,2.15*z);
-   add(P,C(.55*z,.55*z,.3*z,10).rotateX(Math.PI/2),0x7a5a3a,0,.55*z,2.22*z);if(!ab)add(G,C(.2*z,.2*z,.1*z,8).rotateX(Math.PI/2),WN,-1.2*z,.6*z,1.8*z);return 2.3*z;}
-  const L=by-h.y+1.6;for(const q of [[1,1],[1,-1],[-1,1],[-1,-1]])add(P,C(.14*z,.14*z,L,5),0xcfe8ef,q[0]*1.3*z,-L/2+.2,q[1]*1.3*z);
-  add(P,X(3.4*z,.22*z,3.4*z),0xe8f6fa,0,.1*z,0);add(P,S(1.6*z,Math.PI/2),0x9fe6f0,0,.22*z,0);for(let k=0;k<3;k++)add(P,new B.ConeGeometry(.35*z,1.1*z,4),[0xff9aa8,0xffc4d0][k%2],Math.cos(k*2.1)*.7*z,1.55*z,Math.sin(k*2.1)*.7*z);
-  add(P,X(.5*z,.8*z,.1*z),0x5a8fa0,0,.62*z,1.55*z);if(!ab)add(G,X(.3*z,.3*z,.1*z),WN,.8*z,.9*z,1.2*z);return 1.6*z;};
+   C=(a,b,hh,n)=>new B.CylinderGeometry(a,b,hh,n||8),S=(r,ph)=>new B.SphereGeometry(r,12,7,0,6.283,0,ph===undefined?Math.PI:ph),X=(a,b,d)=>new B.BoxGeometry(a,b,d),
+   roof=[0xd9503f,0xe08a3e,0x9a6bd0,0xc05b9a][h.v%4],wood=[0x7a4a2a,0x8b6544,0x654633,0x9a704a][h.style%4],
+   stone=[0x73818a,0x8c8f88,0x656f78,0x999184][h.style%4],glow=[0x7ff0ff,0xffd166,0xff8fd0,0xaaffc8][(h.v+h.style)%4];
+  const windowAt=(x,y,z0,scale)=>{add(G,new B.OctahedronGeometry(.19*scale,0),glow,x,y,z0);add(P,new B.TorusGeometry(.19*scale,.055*scale,4,7),wood,x,y,z0+.035*scale);};
+  if(c===0){
+   const stem=2.25*z,capY=stem+1.05*z;
+   add(P,C(.75*z,.95*z,stem,9),0xf0dfc4,0,stem/2,0);
+   if(h.style%2===0){const cap=S(1.7*z,1.55);cap.scale.set(1,.78,1);add(P,cap,roof,0,capY,0);}
+   else{add(P,new B.ConeGeometry(1.95*z,1.8*z,7,2),roof,0,capY,0);add(P,C(1.55*z,1.7*z,.28*z,8),0xeabf86,0,stem+.18*z,0);}
+   add(P,X(.56*z,1.02*z,.16*z),wood,0,.55*z,.91*z);
+   add(P,new B.BoxGeometry(.2*z,.9*z,.1*z),0x4b3529,.2*z,.56*z,1.01*z);
+   windowAt(-.66*z,1.35*z,.67*z,.9);windowAt(.66*z,1.35*z,.67*z,.9);
+   add(P,C(1.08*z,1.12*z,.12*z,9),0xe8c99c,0,.12*z,0);
+   for(let i=0;i<4;i++){const a=i*1.57+h.style*.28;add(P,new B.IcosahedronGeometry(.19*z,0),0xfff1d1,Math.cos(a)*1.04*z,capY+.18*z,Math.sin(a)*1.04*z);}
+   if(h.style===3)add(G,new B.IcosahedronGeometry(.3*z,1),glow,0,capY+1.2*z,0);
+   return 2.55*z;
+  }
+  if(c===1){
+   const tower=4.25*z,base=1.05*z;
+   add(P,C(.85*z,1.05*z,tower,7),wood,0,tower/2,0);
+   add(P,C(1.3*z,1.5*z,.22*z,8),0x9a744e,0,base,0);
+   if(h.style%3===0)add(P,new B.ConeGeometry(1.95*z,2.05*z,7,2),roof,0,tower+1.0*z,0);
+   else if(h.style%3===1)add(P,new B.OctahedronGeometry(1.5*z,0),roof,0,tower+1.0*z,0);
+   else{const cap=S(1.55*z,Math.PI/2);cap.scale.set(1,.9,1);add(P,cap,roof,0,tower+.8*z,0);}
+   add(P,C(1.38*z,1.38*z,.17*z,8),0xc5a36b,0,tower+.12*z,0);
+   add(P,X(.54*z,1.12*z,.12*z),0x5a392c,0,.62*z,.93*z);
+   windowAt(-.5*z,2.1*z,.86*z,1.1);windowAt(.5*z,2.1*z,.86*z,1.1);
+   windowAt(0,3.2*z,.92*z,.8);
+   for(const q of [-1,1]){add(P,C(.09*z,.14*z,1.15*z,5),wood,q*1.32*z,2.4*z,0);add(P,new B.ConeGeometry(.26*z,.52*z,5),glow,q*1.32*z,3.05*z,0);}
+   if(h.style%2)add(G,new B.IcosahedronGeometry(.28*z,1),glow,0,tower+2.05*z,0);
+   return 7.25*z;
+  }
+  if(c===2){
+   const mound=2.2*z;
+   const hill=new B.IcosahedronGeometry(2.3*z,1);hill.scale(1,.78,1);add(P,hill,[0x5f9a4a,0x6aa84f,0x4f8a58,0x75945a][h.v%4],0,mound*.62,0);
+   add(P,C(.72*z,.88*z,.2*z,9),stone,0,.2*z,1.88*z);
+   add(P,new B.TorusGeometry(.58*z,.13*z,5,9),wood,0,.85*z,1.82*z);
+   add(P,X(.76*z,1.05*z,.16*z),wood,0,.65*z,1.91*z);
+   add(P,X(.15*z,.86*z,.08*z),0x3b2b24,.28*z,.65*z,2.01*z);
+   windowAt(-1.0*z,1.12*z,.95*z,.8);windowAt(1.0*z,1.12*z,.95*z,.8);
+   add(P,C(.22*z,.3*z,1.35*z,5),stone,-1.38*z,1.55*z,-.2*z);
+   add(P,new B.ConeGeometry(.42*z,.56*z,5),roof,-1.38*z,2.45*z,-.2*z);
+   for(let i=0;i<5;i++){const a=i*1.256;add(P,new B.IcosahedronGeometry(.25*z,0),stone,Math.cos(a)*1.65*z,.18*z,Math.sin(a)*1.65*z);}
+   add(P,X(1.5*z,.12*z,1.6*z),wood,0,.07*z,2.65*z);
+   if(h.style===3)add(G,new B.IcosahedronGeometry(.32*z,1),glow,0,2.65*z,0);
+   return 4.25*z;
+  }
+  const deckY=Math.max(2.0*z,by-h.y+1.35*z),deck=deckY+.12*z;
+  for(const q of [[-1,-1],[1,-1],[-1,1],[1,1]])add(P,C(.12*z,.18*z,deckY,6),wood,q[0]*1.28*z,deckY/2,q[1]*1.28*z);
+  add(P,X(3.5*z,.24*z,3.5*z),0xe8f6fa,0,deck,0);
+  add(P,C(1.1*z,1.3*z,1.45*z,8),[0x9fe6f0,0xa1d8e8,0xb6e8e0,0x8ccbd5][h.v%4],0,deck+.82*z,0);
+  if(h.style%2===0){const dome=S(1.75*z,Math.PI/2);dome.scale.set(1,.8,1);add(P,dome,roof,0,deck+1.45*z,0);}
+  else add(P,new B.ConeGeometry(1.8*z,1.5*z,6),roof,0,deck+1.7*z,0);
+  add(P,X(.48*z,.82*z,.12*z),wood,0,deck+.45*z,1.02*z);
+  windowAt(-.72*z,deck+.95*z,.92*z,.85);windowAt(.72*z,deck+.95*z,.92*z,.85);
+  add(P,C(.07*z,.1*z,.95*z,5),0xcfe8ef,0,deck+2.2*z,0);
+  add(G,new B.IcosahedronGeometry(.24*z,1),glow,0,deck+2.9*z,0);
+  add(P,X(1.15*z,.12*z,1.0*z),0xd5f0eb,0,deck+.08*z,2.05*z);
+  return (deckY+3.15*z);
+ };
  return{taken:new Set(),loot:[],get,lay,
   near(x,z,m){const i=Math.floor(x/CELL),j=Math.floor(z/CELL);for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const s=get(i+a,j+b);if(s&&Math.hypot(s.x-x,s.z-z)<s.r*1.1+8+(m||0))return true;}return false;},
   build(cx,cz,x0,z0,big,col,props){const P=[],G=[],ck=cx+','+cz,inC=(x,z)=>x>=x0&&x<x0+CS&&z>=z0&&z<z0+CS;this.loot=this.loot.filter(L=>L.ck!==ck);
