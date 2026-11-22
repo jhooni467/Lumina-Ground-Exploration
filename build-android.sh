@@ -16,7 +16,10 @@ grep -q 'src="three.min.js"' www/index.html || { echo "No se pudo apuntar three.
 npx cap init Lumina com.lumina.groundexploration --web-dir www
 npx cap add android
 M=android/app/src/main/AndroidManifest.xml
-sed -i 's#<activity #<activity android:screenOrientation="portrait" #' "$M"
+sed -i 's#<activity #<activity android:screenOrientation="sensorLandscape" #' "$M"
+# pantalla completa inmersiva (sin barra de estado) y uso de la zona del notch en horizontal
+ST=android/app/src/main/res/values/styles.xml
+sed -i 's#</style>#    <item name="android:windowFullscreen">true</item>\n    <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>\n</style>#' "$ST"
 npx cap sync android
 cd android && chmod +x gradlew && ./gradlew assembleDebug
 echo "APK: $(pwd)/app/build/outputs/apk/debug/app-debug.apk"
