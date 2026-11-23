@@ -5,10 +5,15 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "build-android.sh"
+      - "LEEME_ANDROID.md"
       - ".github/workflows/validate-lumina.yml"
   pull_request:
     paths:
       - "index.html"
+      - "build-android.sh"
+      - "LEEME_ANDROID.md"
+      - ".github/workflows/validate-lumina.yml"
 
 permissions:
   contents: read
@@ -33,7 +38,7 @@ jobs:
 
           html = Path("index.html").read_text(encoding="utf-8")
           scripts = re.findall(
-              r"<script\b(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script\s*>",
+              r"<script\\b(?![^>]*\\bsrc\\s*=)[^>]*>(.*?)</script\\s*>",
               html,
               flags=re.IGNORECASE | re.DOTALL,
           )
@@ -46,3 +51,5 @@ jobs:
           PY
       - name: Check JavaScript syntax
         run: node --check /tmp/lumina-game.js
+      - name: Check Android build script syntax
+        run: bash -n build-android.sh
