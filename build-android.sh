@@ -78,7 +78,7 @@ from pathlib import Path
 
 manifest_path, styles_path = map(Path, sys.argv[1:3])
 manifest = manifest_path.read_text(encoding="utf-8")
-activity_re = re.compile(r"<activity\\b[^>]*>", re.IGNORECASE | re.DOTALL)
+activity_re = re.compile(r"<activity\b[^>]*>", re.IGNORECASE | re.DOTALL)
 activities = list(activity_re.finditer(manifest))
 if not activities:
     raise SystemExit("No se encontró ninguna etiqueta <activity> en AndroidManifest.xml.")
@@ -86,19 +86,19 @@ if not activities:
 # Prioriza MainActivity; si el template cambia, usa la primera actividad declarada.
 match = next((m for m in activities if "MainActivity" in m.group(0)), activities[0])
 tag = match.group(0)
-orientation_re = re.compile(r'(\\bandroid:screenOrientation\\s*=\\s*)(["\\'])[^"\\']*\\2')
+orientation_re = re.compile(r'(\bandroid:screenOrientation\s*=\s*)(["\'])[^"\']*\2')
 if orientation_re.search(tag):
-    tag = orientation_re.sub(r'\\1"sensorLandscape"', tag)
+    tag = orientation_re.sub(r'\1"sensorLandscape"', tag)
 else:
     tag = tag[:-1].rstrip() + ' android:screenOrientation="sensorLandscape">'
 manifest = manifest[:match.start()] + tag + manifest[match.end():]
 manifest_path.write_text(manifest, encoding="utf-8")
 
-theme_match = re.search(r'\\bandroid:theme\\s*=\\s*["\\']@style/([^"\\']+)', tag)
+theme_match = re.search(r'\bandroid:theme\s*=\s*["\']@style/([^"\']+)', tag)
 theme_name = theme_match.group(1) if theme_match else "AppTheme.NoActionBar"
 styles = styles_path.read_text(encoding="utf-8")
 style_re = re.compile(
-    r'(<style\\b(?=[^>]*\\bname\\s*=\\s*["\\']' + re.escape(theme_name) + r'["\\'])[^>]*>)(.*?)(</style\\s*>)',
+    r'(<style\b(?=[^>]*\bname\s*=\s*["\']' + re.escape(theme_name) + r'["\'])[^>]*>)(.*?)(</style\s*>)',
     re.IGNORECASE | re.DOTALL,
 )
 style_match = style_re.search(styles)
@@ -107,14 +107,14 @@ if not style_match:
 body = style_match.group(2)
 for item_name in ("android:windowFullscreen", "android:windowLayoutInDisplayCutoutMode"):
     body = re.sub(
-        r'\\s*<item\\s+name=["\\']' + re.escape(item_name) + r'["\\']>.*?</item\\s*>',
+        r'\s*<item\s+name=["\']' + re.escape(item_name) + r'["\']>.*?</item\s*>',
         "",
         body,
         flags=re.IGNORECASE | re.DOTALL,
     )
 body = body.rstrip() + (
-    '\\n        <item name="android:windowFullscreen">true</item>'
-    '\\n        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>\\n    '
+    '\n        <item name="android:windowFullscreen">true</item>'
+    '\n        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>\n    '
 )
 styles = styles[:style_match.start(2)] + body + styles[style_match.end(2):]
 styles_path.write_text(styles, encoding="utf-8")
